@@ -28,7 +28,7 @@ void state_cb(const mavros_msgs::State::ConstPtr& msg) {
 
 int time_limit = 3;
 int hit_frequency = 100;
-float target_margin = 0.1;
+float target_margin = 0.2;
 
 geometry_msgs::PoseStamped curr_pose;
 geometry_msgs::PoseStamped next_target;
@@ -132,14 +132,16 @@ int main(int argc, char **argv) {
 
     // ros::Time last_request = ros::Time::now();
 
-    while (!(set_mode_client.call(offb_set_mode) &&
+    while (ros::ok() && current_state.mode != "OFFBOARD" &&
+           !(set_mode_client.call(offb_set_mode) &&
             offb_set_mode.response.mode_sent)) {
         ros::spinOnce();
         rate.sleep();
     }
     ROS_INFO("Offboard enabled");
-    while (!(arming_client.call(arm_cmd) &&
-             arm_cmd.response.success)) {
+    while (ros::ok() && !current_state.armed &&
+           !(arming_client.call(arm_cmd) &&
+            arm_cmd.response.success)) {
         ros::spinOnce();
         rate.sleep();
     }
@@ -158,16 +160,16 @@ int main(int argc, char **argv) {
 
     geometry_msgs::PoseStamped pose2;
     pose2.pose.position.x = 0;
-    pose2.pose.position.y = 1;
+    pose2.pose.position.y = 2;
     pose2.pose.position.z = 2;
 
     geometry_msgs::PoseStamped pose3;
-    pose3.pose.position.x = 1;
-    pose3.pose.position.y = 1;
+    pose3.pose.position.x = 2;
+    pose3.pose.position.y = 2;
     pose3.pose.position.z = 2;
 
     geometry_msgs::PoseStamped pose4;
-    pose4.pose.position.x = 1;
+    pose4.pose.position.x = 2;
     pose4.pose.position.y = 0;
     pose4.pose.position.z = 2;
 
