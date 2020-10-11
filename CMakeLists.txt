@@ -43,8 +43,8 @@ include_directories(
 add_executable(offb_node src/offb_node.cpp)
 target_link_libraries(offb_node ${catkin_LIBRARIES})
 
-add_executable(temp src/temp.cpp)
-target_link_libraries(temp ${catkin_LIBRARIES})
+add_executable(random src/random_sequence.cpp)
+target_link_libraries(random ${catkin_LIBRARIES})
 
 link_libraries(
   ${Boost_SYSTEM_LIBRARY_RELEASE}

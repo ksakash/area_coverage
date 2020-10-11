@@ -1,29 +1,17 @@
-/**
- * @file offb_node.cpp
- * @brief Offboard control example node, written with MAVROS version 0.19.x, PX4 Pro Flight
- * Stack and tested in Gazebo SITL
- */
-
-#include <vector>
-#include <iomanip>
-#include <iostream>
-#include <fstream>
-#include <stdlib.h>
-#include <unistd.h>
+#include <ros/ros.h>
 
 #include <boost/thread.hpp>
-#include <boost/chrono.hpp>
 
-#include <ros/ros.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <mavros_msgs/CommandBool.h>
 #include <mavros_msgs/SetMode.h>
 #include <mavros_msgs/State.h>
+#include <std_msgs/Int8MultiArray.h>
 
 using namespace std;
 
 mavros_msgs::State current_state;
-void state_cb(const mavros_msgs::State::ConstPtr& msg) {
+void state_cb (const mavros_msgs::State::ConstPtr& msg) {
     current_state = *msg;
 }
 
@@ -62,14 +50,48 @@ bool reachedTarget (const geometry_msgs::PoseStamped& target) {
     else return false;
 }
 
-void target_handler (std::vector<geometry_msgs::PoseStamped>& plan) {
-    next_target = plan.back();
-    while (!plan.empty()) {
-        if (reachedTarget (plan.back())) {
-            cout << "Achieved: " << plan.back().pose.position.x << " "
-                 << plan.back().pose.position.y << " " << plan.back().pose.position.z << endl;
-            plan.pop_back ();
-            if (!plan.empty()) next_target = plan.back();
+int getrandom (int l, int r) {
+    return (int) (l + std::rand() % (r - l + 1));
+}
+
+vector<int> obstacle;
+void cb (const std_msgs::Int8MultiArray::ConstPtr& msg) {
+    obstacle = {msg->data[0], msg->data[1], msg->data[2],
+                msg->data[3], msg->data[4], msg->data[5]};
+}
+
+void get_next_target (geometry_msgs::PoseStamped& target) {
+    vector<int> arr;
+    for (int i = 0; i < obstacle.size(); i++) {
+        if (obstacle[i]) arr.push_back (i);
+    }
+    int index = getrandom (0, arr.size()-1);
+    int dir = arr[index];
+    if (dir == 0) {
+        target.pose.position.z -= 1;
+    }
+    else if (dir == 1) {
+        target.pose.position.z += 1;
+    }
+    else if (dir == 2) {
+        target.pose.position.x -= 1;
+    }
+    else if (dir == 3) {
+        target.pose.position.x += 1;
+    }
+    else if (dir == 4) {
+        target.pose.position.y -= 1;
+    }
+    else {
+        target.pose.position.y += 1;
+    }
+}
+
+void target_handler (geometry_msgs::PoseStamped& target) {
+    while (ros::ok()) {
+        if (reachedTarget (target)) {
+            get_next_target (target);
+            next_target = target;
         }
     }
 }
@@ -85,30 +107,14 @@ void pub_thread () {
     }
 }
 
-void process_input (string filename, std::vector<geometry_msgs::PoseStamped>& plan) {
-    std::string line;
-    std::ifstream file (filename);
-    while (getline (file, line)) {
-        if (line.size() == 0) continue;
-        stringstream ss (line);
-        string strx, stry, strz;
-        ss >> strx >> stry >> strz;
-        geometry_msgs::PoseStamped pose;
-        pose.pose.position.x = std::stof (strx);
-        pose.pose.position.y = std::stof (stry);
-        pose.pose.position.z = std::stof (strz);
-        plan.push_back (pose);
-    }
-}
-
-int main(int argc, char **argv) {
-    ros::init(argc, argv, "offb_node");
+int main (int argc, char** argv) {
+    ros::init (argc, argv, "random_sequence");
     ros::NodeHandle nh;
 
     ros::Subscriber state_sub = nh.subscribe<mavros_msgs::State>
             ("mavros/state", 10, state_cb);
-    ros::Subscriber pose_sub = nh.subscribe<geometry_msgs::PoseStamped>
-            ("mavros/local_position/pose", 10, pose_cb);
+    ros::Subscriber pose_sub = nh.subscribe<std_msgs::Int8MultiArray>
+            ("/obstacle/map", 10, cb);
     local_pos_pub = nh.advertise<geometry_msgs::PoseStamped>
             ("mavros/setpoint_position/local", 10);
     ros::ServiceClient arming_client = nh.serviceClient<mavros_msgs::CommandBool>
@@ -116,25 +122,22 @@ int main(int argc, char **argv) {
     ros::ServiceClient set_mode_client = nh.serviceClient<mavros_msgs::SetMode>
             ("mavros/set_mode");
 
-    ros::Rate rate(20.0);
+    ros::Rate rate (20);
 
-    while(ros::ok() && !current_state.connected) {
-        ros::spinOnce();
-        rate.sleep();
+    while (ros::ok() && !current_state.connected) {
+        ros::spinOnce ();
+        rate.sleep ();
     }
 
-    string filename = "/home/ksakash/misc/catkin_ws/src/beginner_tutorials/cfg/waypoints";
-    std::vector<geometry_msgs::PoseStamped> plan;
-
-    process_input (filename, plan);
-
     geometry_msgs::PoseStamped pose;
-    pose = plan[0];
+    pose.pose.position.x = 0;
+    pose.pose.position.y = 0;
+    pose.pose.position.z = 0;
 
-    for(int i = 100; ros::ok() && i > 0; --i) {
-        local_pos_pub.publish(pose);
-        ros::spinOnce();
-        rate.sleep();
+    for (int i = 100; ros::ok() && i > 0; --i) {
+        local_pos_pub.publish (pose);
+        ros::spinOnce ();
+        rate.sleep ();
     }
     next_target = pose;
     boost::thread th (pub_thread);
@@ -160,12 +163,10 @@ int main(int argc, char **argv) {
     }
     ROS_INFO("Vehicle armed");
 
-    reverse (plan.begin(), plan.end());
+    boost::thread th1 (target_handler, pose);
 
-    boost::thread th1 (target_handler, plan);
     th1.join ();
-
-    th.join();
+    th.join ();
 
     return 0;
 }
