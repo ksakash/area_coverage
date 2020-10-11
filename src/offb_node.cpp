@@ -7,6 +7,7 @@
 #include <vector>
 #include <iomanip>
 #include <iostream>
+#include <fstream>
 #include <stdlib.h>
 #include <unistd.h>
 
@@ -86,6 +87,22 @@ void pub_thread () {
     }
 }
 
+void process_input (string filename, std::vector<geometry_msgs::PoseStamped>& plan) {
+    std::string line;
+    std::ifstream file (filename);
+    while (getline (file, line)) {
+        if (line.size() == 0) continue;
+        stringstream ss (line);
+        string strx, stry, strz;
+        ss >> strx >> stry >> strz;
+        geometry_msgs::PoseStamped pose;
+        pose.pose.position.x = std::stof (strx);
+        pose.pose.position.y = std::stof (stry);
+        pose.pose.position.z = std::stof (strz);
+        plan.push_back (pose);
+    }
+}
+
 int main(int argc, char **argv) {
     ros::init(argc, argv, "offb_node");
     ros::NodeHandle nh;
@@ -110,10 +127,16 @@ int main(int argc, char **argv) {
         rate.sleep();
     }
 
+    string filename = "/home/ksakash/misc/catkin_ws/src/beginner_tutorials/cfg/waypoints";
+    std::vector<geometry_msgs::PoseStamped> plan;
+
+    process_input (filename, plan);
+
     geometry_msgs::PoseStamped pose;
-    pose.pose.position.x = 0;
-    pose.pose.position.y = 0;
-    pose.pose.position.z = 2;
+    // pose.pose.position.x = 0;
+    // pose.pose.position.y = 0;
+    // pose.pose.position.z = 2;
+    pose = plan[0];
 
     // send a few setpoints before starting
     for(int i = 100; ros::ok() && i > 0; --i) {
@@ -152,37 +175,36 @@ int main(int argc, char **argv) {
 
     // reachedTarget (pose);
 
-    std::vector<geometry_msgs::PoseStamped> plan;
-    geometry_msgs::PoseStamped pose1;
-    pose1.pose.position.x = 0;
-    pose1.pose.position.y = 0;
-    pose1.pose.position.z = 2;
+    // geometry_msgs::PoseStamped pose1;
+    // pose1.pose.position.x = 0;
+    // pose1.pose.position.y = 0;
+    // pose1.pose.position.z = 2;
 
-    geometry_msgs::PoseStamped pose2;
-    pose2.pose.position.x = 0;
-    pose2.pose.position.y = 2;
-    pose2.pose.position.z = 2;
+    // geometry_msgs::PoseStamped pose2;
+    // pose2.pose.position.x = 0;
+    // pose2.pose.position.y = 2;
+    // pose2.pose.position.z = 2;
 
-    geometry_msgs::PoseStamped pose3;
-    pose3.pose.position.x = 2;
-    pose3.pose.position.y = 2;
-    pose3.pose.position.z = 2;
+    // geometry_msgs::PoseStamped pose3;
+    // pose3.pose.position.x = 2;
+    // pose3.pose.position.y = 2;
+    // pose3.pose.position.z = 2;
 
-    geometry_msgs::PoseStamped pose4;
-    pose4.pose.position.x = 2;
-    pose4.pose.position.y = 0;
-    pose4.pose.position.z = 2;
+    // geometry_msgs::PoseStamped pose4;
+    // pose4.pose.position.x = 2;
+    // pose4.pose.position.y = 0;
+    // pose4.pose.position.z = 2;
 
-    geometry_msgs::PoseStamped pose5;
-    pose5.pose.position.x = 0;
-    pose5.pose.position.y = 0;
-    pose5.pose.position.z = 2;
+    // geometry_msgs::PoseStamped pose5;
+    // pose5.pose.position.x = 0;
+    // pose5.pose.position.y = 0;
+    // pose5.pose.position.z = 2;
 
-    plan.push_back (pose1);
-    plan.push_back (pose2);
-    plan.push_back (pose3);
-    plan.push_back (pose4);
-    plan.push_back (pose5);
+    // plan.push_back (pose1);
+    // plan.push_back (pose2);
+    // plan.push_back (pose3);
+    // plan.push_back (pose4);
+    // plan.push_back (pose5);
     reverse (plan.begin(), plan.end());
 
     boost::thread th1 (target_handler, plan);
