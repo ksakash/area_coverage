@@ -70,22 +70,22 @@ int main (int argc, char** argv) {
     node->Init();
 
     gazebo::transport::SubscriberPtr sub0 =
-        node->Subscribe ("/gazebo/default/iris_opt_flow/link/lidar0", cb0);
+        node->Subscribe ("/gazebo/default/iris/link/lidar0", cb0);
 
     gazebo::transport::SubscriberPtr sub1 =
-        node->Subscribe ("/gazebo/default/iris_opt_flow/link/lidar1", cb1);
+        node->Subscribe ("/gazebo/default/iris/link/lidar1", cb1);
 
     gazebo::transport::SubscriberPtr sub2 =
-        node->Subscribe ("/gazebo/default/iris_opt_flow/link/lidar2", cb2);
+        node->Subscribe ("/gazebo/default/iris/link/lidar2", cb2);
 
     gazebo::transport::SubscriberPtr sub3 =
-        node->Subscribe ("/gazebo/default/iris_opt_flow/link/lidar3", cb3);
+        node->Subscribe ("/gazebo/default/iris/link/lidar3", cb3);
 
     gazebo::transport::SubscriberPtr sub4 =
-        node->Subscribe ("/gazebo/default/iris_opt_flow/link/lidar4", cb4);
+        node->Subscribe ("/gazebo/default/iris/link/lidar4", cb4);
 
     gazebo::transport::SubscriberPtr sub5 =
-        node->Subscribe ("/gazebo/default/iris_opt_flow/link/lidar5", cb5);
+        node->Subscribe ("/gazebo/default/iris/link/lidar5", cb5);
 
     ros::Rate rate (20);
 

@@ -4,6 +4,7 @@ project(beginner_tutorials)
 # add_compile_options(-std=c++11)
 
 find_package(catkin REQUIRED COMPONENTS
+  visualization_msgs
   geometry_msgs
   mavros_msgs
   roscpp
@@ -16,7 +17,7 @@ find_package(Protobuf REQUIRED)
 pkg_check_modules(PROTOBUF protobuf)
 
 catkin_package(
-  CATKIN_DEPENDS geometry_msgs mavros_msgs roscpp
+  CATKIN_DEPENDS geometry_msgs mavros_msgs roscpp visualization_msgs
 )
 
 set(PROTOBUF_IMPORT_DIRS "")
@@ -42,6 +43,12 @@ include_directories(
 
 add_executable(offb_node src/offb_node.cpp)
 target_link_libraries(offb_node ${catkin_LIBRARIES})
+
+add_executable(area_coverage src/area_coverage.cpp)
+target_link_libraries(area_coverage ${catkin_LIBRARIES})
+
+add_executable(marker src/obst_marker.cpp)
+target_link_libraries(marker ${catkin_LIBRARIES})
 
 add_executable(random src/random_sequence.cpp)
 target_link_libraries(random ${catkin_LIBRARIES})

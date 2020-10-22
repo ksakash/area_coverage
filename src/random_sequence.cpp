@@ -15,7 +15,7 @@ void state_cb (const mavros_msgs::State::ConstPtr& msg) {
     current_state = *msg;
 }
 
-int time_limit = 3;
+int time_limit = 1;
 int hit_frequency = 100;
 float target_margin = 0.2;
 
@@ -51,7 +51,7 @@ bool reachedTarget (const geometry_msgs::PoseStamped& target) {
 }
 
 int getrandom (int l, int r) {
-    return (int) (l + std::rand() % (r - l + 1));
+    return (int) (l + int (std::rand()) % (r - l + 1));
 }
 
 vector<int> obstacle;
@@ -65,6 +65,7 @@ void get_next_target (geometry_msgs::PoseStamped& target) {
     for (int i = 0; i < obstacle.size(); i++) {
         if (obstacle[i]) arr.push_back (i);
     }
+    if (arr.size() == 0) return;
     int index = getrandom (0, arr.size()-1);
     int dir = arr[index];
     if (dir == 0) {
@@ -74,10 +75,10 @@ void get_next_target (geometry_msgs::PoseStamped& target) {
         target.pose.position.z += 1;
     }
     else if (dir == 2) {
-        target.pose.position.x -= 1;
+        target.pose.position.x += 1;
     }
     else if (dir == 3) {
-        target.pose.position.x += 1;
+        target.pose.position.x -= 1;
     }
     else if (dir == 4) {
         target.pose.position.y -= 1;
@@ -88,32 +89,41 @@ void get_next_target (geometry_msgs::PoseStamped& target) {
 }
 
 void target_handler (geometry_msgs::PoseStamped& target) {
+    ros::Rate rate (20);
     while (ros::ok()) {
         if (reachedTarget (target)) {
             get_next_target (target);
             next_target = target;
+            cout << target.pose.position.x << " "
+                 << target.pose.position.y << " "
+                 << target.pose.position.z << endl;
         }
+        ros::spinOnce ();
+        rate.sleep ();
     }
 }
 
 ros::Publisher local_pos_pub;
 
 void pub_thread () {
-    ros::Rate rate (20.0);
+    ros::Rate rate (20);
     while (ros::ok()) {
         local_pos_pub.publish (next_target);
         ros::spinOnce ();
-        rate.sleep();
+        rate.sleep ();
     }
 }
 
 int main (int argc, char** argv) {
     ros::init (argc, argv, "random_sequence");
     ros::NodeHandle nh;
+    obstacle.resize (6);
 
     ros::Subscriber state_sub = nh.subscribe<mavros_msgs::State>
             ("mavros/state", 10, state_cb);
-    ros::Subscriber pose_sub = nh.subscribe<std_msgs::Int8MultiArray>
+    ros::Subscriber pose_sub = nh.subscribe<geometry_msgs::PoseStamped>
+            ("mavros/local_position/pose", 10, pose_cb);
+    ros::Subscriber ob_map_sub = nh.subscribe<std_msgs::Int8MultiArray>
             ("/obstacle/map", 10, cb);
     local_pos_pub = nh.advertise<geometry_msgs::PoseStamped>
             ("mavros/setpoint_position/local", 10);
@@ -132,7 +142,7 @@ int main (int argc, char** argv) {
     geometry_msgs::PoseStamped pose;
     pose.pose.position.x = 0;
     pose.pose.position.y = 0;
-    pose.pose.position.z = 0;
+    pose.pose.position.z = 2;
 
     for (int i = 100; ros::ok() && i > 0; --i) {
         local_pos_pub.publish (pose);
