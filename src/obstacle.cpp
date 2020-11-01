@@ -90,9 +90,6 @@ int main (int argc, char** argv) {
     ros::Rate rate (20);
 
     while (ros::ok()) {
-        // cout << msg0 << " " << msg1 << " " << msg2 << endl;
-        // cout << msg3 << " " << msg4 << " " << msg5 << endl;
-        // cout << "------------------------" << endl;
         std_msgs::Int8MultiArray msg;
         fillMsg (msg);
         pub.publish (msg);

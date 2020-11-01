@@ -7,6 +7,7 @@ find_package(catkin REQUIRED COMPONENTS
   visualization_msgs
   geometry_msgs
   mavros_msgs
+  nav_msgs
   roscpp
 )
 
@@ -17,7 +18,7 @@ find_package(Protobuf REQUIRED)
 pkg_check_modules(PROTOBUF protobuf)
 
 catkin_package(
-  CATKIN_DEPENDS geometry_msgs mavros_msgs roscpp visualization_msgs
+  CATKIN_DEPENDS geometry_msgs mavros_msgs roscpp visualization_msgs nav_msgs
 )
 
 set(PROTOBUF_IMPORT_DIRS "")
@@ -43,6 +44,9 @@ include_directories(
 
 add_executable(offb_node src/offb_node.cpp)
 target_link_libraries(offb_node ${catkin_LIBRARIES})
+
+add_executable(odo_offset src/odo_offset.cpp)
+target_link_libraries(odo_offset ${catkin_LIBRARIES})
 
 add_executable(area_coverage src/area_coverage.cpp)
 target_link_libraries(area_coverage ${catkin_LIBRARIES})

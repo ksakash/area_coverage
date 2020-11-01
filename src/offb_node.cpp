@@ -123,7 +123,7 @@ int main(int argc, char **argv) {
         rate.sleep();
     }
 
-    string filename = "/home/ksakash/misc/catkin_ws/src/beginner_tutorials/cfg/roboty0.plan";
+    string filename = "/home/ksakash/misc/catkin_ws/src/beginner_tutorials/cfg/waypoints";
     std::vector<geometry_msgs::PoseStamped> plan;
 
     process_input (filename, plan);
