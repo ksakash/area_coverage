@@ -1,2 +1,22 @@
 # area_coverage
 contains ros code for position controller
+
+# nodes
+area_coverage.cpp - node that is a local planner for 2 planners that take waypoints from cfg/ dir
+
+obst_marker.cpp - node that publishes the location of the obstacles to show as a marker in rviz
+
+ostacle.cpp - take laser scans from the lidars and publish an array which indicates in which
+              direction the quadcopter can go
+
+odo_offset.cpp - node to publish corrected odometry for quadcopters with an offset due to initial
+                 position
+
+offb_node.cpp - local planner to follow a series of waypoints for a single quadcopter, provides
+                framework for other planners for multiple quadcopters
+
+random_sequence.cpp - a unique local planner to randomly select a trajectory in a fixed environment
+                      with fixed ostacles
+
+# cfg
+contains waypoints to be followed by one of the local planner
