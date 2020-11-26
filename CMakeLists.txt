@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   mavros_msgs
   nav_msgs
   roscpp
+  message_generation
 )
 
 find_package(Boost 1.58 REQUIRED COMPONENTS system thread filesystem)
@@ -17,8 +18,22 @@ find_package(gazebo REQUIRED)
 find_package(Protobuf REQUIRED)
 pkg_check_modules(PROTOBUF protobuf)
 
+add_message_files (
+  FILES
+  Waypoint.msg
+)
+add_service_files (
+  FILES
+  InitWaypointSet.srv
+)
+
+generate_messages (
+  DEPENDENCIES
+  std_msgs geometry_msgs
+)
+
 catkin_package(
-  CATKIN_DEPENDS geometry_msgs mavros_msgs roscpp visualization_msgs nav_msgs
+  CATKIN_DEPENDS geometry_msgs mavros_msgs roscpp visualization_msgs nav_msgs message_generation
 )
 
 set(PROTOBUF_IMPORT_DIRS "")

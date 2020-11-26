@@ -20,6 +20,11 @@
 #include <mavros_msgs/SetMode.h>
 #include <mavros_msgs/State.h>
 
+#include "beginner_tutorials/InitWaypointSet.h"
+#include "beginner_tutorials/Waypoint.h"
+
+#include <std_msgs/Time.h>
+
 using namespace std;
 
 mavros_msgs::State current_state;
@@ -28,7 +33,7 @@ void state_cb(const mavros_msgs::State::ConstPtr& msg) {
 }
 
 int time_limit = 3;
-int hit_frequency = 100;
+int hit_frequency = 40;
 float target_margin = 0.2;
 
 geometry_msgs::PoseStamped curr_pose;
@@ -56,6 +61,7 @@ bool reachedTarget (const geometry_msgs::PoseStamped& target) {
         if (withinRange (target, curr_pose)) {
             count++;
         }
+        if (count >= hit_frequency) return true;
         rate.sleep();
     }
     if (count >= hit_frequency) return true;
@@ -101,6 +107,24 @@ void process_input (string filename, std::vector<geometry_msgs::PoseStamped>& pl
     }
 }
 
+void process_file (string filename, beginner_tutorials::InitWaypointSet& srv) {
+    std::string line;
+    std::ifstream file (filename);
+    while (getline (file, line)) {
+        if (line.size() == 0) continue;
+        stringstream ss (line);
+        string strx, stry, strz;
+        ss >> strx >> stry >> strz;
+        geometry_msgs::Point p;
+        beginner_tutorials::Waypoint w;
+        w.point.x = std::stof (strx);
+        w.point.y = std::stof (stry);
+        w.point.z = std::stof (strz);
+        w.max_forward_speed = 0.5;
+        srv.request.waypoints.push_back (w);
+    }
+}
+
 int main(int argc, char **argv) {
     ros::init(argc, argv, "offb_node");
     ros::NodeHandle nh;
@@ -115,6 +139,8 @@ int main(int argc, char **argv) {
             ("mavros/cmd/arming");
     ros::ServiceClient set_mode_client = nh.serviceClient<mavros_msgs::SetMode>
             ("mavros/set_mode");
+    ros::ServiceClient client = nh.serviceClient<beginner_tutorials::InitWaypointSet>
+            ("/anahita/start_waypoint_list");
 
     ros::Rate rate(20.0);
 
@@ -137,7 +163,7 @@ int main(int argc, char **argv) {
         rate.sleep();
     }
     next_target = pose;
-    boost::thread th (pub_thread);
+    // boost::thread th (pub_thread);
 
     mavros_msgs::SetMode offb_set_mode;
     offb_set_mode.request.custom_mode = "OFFBOARD";
@@ -160,12 +186,36 @@ int main(int argc, char **argv) {
     }
     ROS_INFO("Vehicle armed");
 
-    reverse (plan.begin(), plan.end());
+    // reverse (plan.begin(), plan.end());
 
-    boost::thread th1 (target_handler, plan);
-    th1.join ();
+    // boost::thread th1 (target_handler, plan);
+    // th1.join ();
 
-    th.join();
+    // th.join();
+
+    beginner_tutorials::InitWaypointSet srv;
+    process_file (filename, srv);
+
+    std_msgs::Time t;
+    t.data = ros::Time::now ();
+
+    std_msgs::String intr;
+    intr.data = "cubic";
+
+    srv.request.start_time = t;
+    srv.request.start_now = true;
+    srv.request.max_forward_speed = 0.5;
+    srv.request.heading_offset = 0;
+    srv.request.interpolator = intr;
+
+    if (client.call (srv)) {
+        std::cout << "Successfull!!" << std::endl;
+    }
+    else {
+        std::cout << "ERROR in calling the service!!" << std::endl;
+    }
+
+    ros::spin ();
 
     return 0;
 }
