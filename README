@@ -17,6 +17,11 @@ offb_node.cpp - local planner to follow a series of waypoints for a single quadc
 
 random_sequence.cpp - a unique local planner to randomly select a trajectory in a fixed environment
                       with fixed ostacles
-
-# cfg
-contains waypoints to be followed by one of the local planner
+                      
+# dirs
+cfg - contains waypoints to be followed by one of the local planner
+launch - contains launch files for launching nodes
+src - source code
+msg - ROS msg files
+msgs - Gazebo msg files
+srv - ROS service files
