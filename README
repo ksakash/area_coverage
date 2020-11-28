@@ -2,6 +2,7 @@
 contains ros code for position controller
 
 # nodes
+
 area_coverage.cpp - node that is a local planner for 2 planners that take waypoints from cfg/ dir
 
 obst_marker.cpp - node that publishes the location of the obstacles to show as a marker in rviz
@@ -19,9 +20,32 @@ random_sequence.cpp - a unique local planner to randomly select a trajectory in 
                       with fixed ostacles
                       
 # dirs
+
 cfg - contains waypoints to be followed by one of the local planner
 launch - contains launch files for launching nodes
 src - source code
 msg - ROS msg files
 msgs - Gazebo msg files
 srv - ROS service files
+
+# dpendencies
+
+melodic-ros, mavros, geometry_msgs
+
+# instructions to build
+
+$ mkdir -p catkin_ws/src
+$ cd catkin_ws
+$ catkin_make
+$ cd src
+$ git clone https://github.com/ksakash/area_coverage
+$ cd ../
+$ catkin_make
+
+# instructions to run
+
+$ cd catkin_ws
+$ source devel/setup.bash
+$ rosrun <package_name> <node_name>
+
+
