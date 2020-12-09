@@ -22,6 +22,8 @@
 
 #include "beginner_tutorials/InitWaypointSet.h"
 #include "beginner_tutorials/Waypoint.h"
+#include "beginner_tutorials/GoTo.h"
+#include "beginner_tutorials/GoToPose.h"
 
 #include <std_msgs/Time.h>
 
@@ -81,11 +83,39 @@ void target_handler (std::vector<geometry_msgs::PoseStamped>& plan) {
 }
 
 ros::Publisher local_pos_pub;
+ros::ServiceClient arming_client;
+ros::ServiceClient set_mode_client;
 
 void pub_thread () {
+    mavros_msgs::SetMode offb_set_mode;
+    offb_set_mode.request.custom_mode = "OFFBOARD";
+
+    mavros_msgs::CommandBool arm_cmd;
+    arm_cmd.request.value = true;
+
+    ros::Time last_request = ros::Time::now();
+
     ros::Rate rate (20.0);
+
     while (ros::ok()) {
-        local_pos_pub.publish (next_target);
+        if (current_state.mode != "OFFBOARD" &&
+            (ros::Time::now() - last_request > ros::Duration(5.0))) {
+            if(set_mode_client.call(offb_set_mode) &&
+                offb_set_mode.response.mode_sent) {
+                ROS_INFO("Offboard enabled");
+            }
+            last_request = ros::Time::now();
+        } else {
+            if( !current_state.armed &&
+                (ros::Time::now() - last_request > ros::Duration(5.0))) {
+                if(arming_client.call(arm_cmd) &&
+                    arm_cmd.response.success) {
+                    ROS_INFO("Vehicle armed");
+                }
+                last_request = ros::Time::now();
+            }
+        }
+        // local_pos_pub.publish (next_target);
         ros::spinOnce ();
         rate.sleep();
     }
@@ -135,12 +165,16 @@ int main(int argc, char **argv) {
             ("mavros/local_position/pose", 10, pose_cb);
     local_pos_pub = nh.advertise<geometry_msgs::PoseStamped>
             ("mavros/setpoint_position/local", 10);
-    ros::ServiceClient arming_client = nh.serviceClient<mavros_msgs::CommandBool>
+    arming_client = nh.serviceClient<mavros_msgs::CommandBool>
             ("mavros/cmd/arming");
-    ros::ServiceClient set_mode_client = nh.serviceClient<mavros_msgs::SetMode>
+    set_mode_client = nh.serviceClient<mavros_msgs::SetMode>
             ("mavros/set_mode");
     ros::ServiceClient client = nh.serviceClient<beginner_tutorials::InitWaypointSet>
-            ("/anahita/start_waypoint_list");
+            ("start_waypoint_list");
+    ros::ServiceClient goto_client = nh.serviceClient<beginner_tutorials::GoTo>
+            ("go_to");
+    ros::ServiceClient goto_pose_client = nh.serviceClient<beginner_tutorials::GoToPose>
+            ("go_to_pose");
 
     ros::Rate rate(20.0);
 
@@ -162,36 +196,36 @@ int main(int argc, char **argv) {
         ros::spinOnce();
         rate.sleep();
     }
-    next_target = pose;
-    // boost::thread th (pub_thread);
+    // next_target = pose;
+    boost::thread th (pub_thread);
 
-    mavros_msgs::SetMode offb_set_mode;
-    offb_set_mode.request.custom_mode = "OFFBOARD";
+    // mavros_msgs::SetMode offb_set_mode;
+    // offb_set_mode.request.custom_mode = "OFFBOARD";
 
-    mavros_msgs::CommandBool arm_cmd;
-    arm_cmd.request.value = true;
+    // mavros_msgs::CommandBool arm_cmd;
+    // arm_cmd.request.value = true;
 
-    while (ros::ok() && current_state.mode != "OFFBOARD" &&
-           !(set_mode_client.call(offb_set_mode) &&
-            offb_set_mode.response.mode_sent)) {
-        ros::spinOnce();
-        rate.sleep();
-    }
-    ROS_INFO("Offboard enabled");
-    while (ros::ok() && !current_state.armed &&
-           !(arming_client.call(arm_cmd) &&
-            arm_cmd.response.success)) {
-        ros::spinOnce();
-        rate.sleep();
-    }
-    ROS_INFO("Vehicle armed");
+    // while (ros::ok() && current_state.mode != "OFFBOARD" &&
+    //        !(set_mode_client.call(offb_set_mode) &&
+    //         offb_set_mode.response.mode_sent)) {
+    //     ros::spinOnce();
+    //     rate.sleep();
+    // }
+    // ROS_INFO("Offboard enabled");
+    // while (ros::ok() && !current_state.armed &&
+    //        !(arming_client.call(arm_cmd) &&
+    //         arm_cmd.response.success)) {
+    //     ros::spinOnce();
+    //     rate.sleep();
+    // }
+    // ROS_INFO("Vehicle armed");
 
     // reverse (plan.begin(), plan.end());
 
     // boost::thread th1 (target_handler, plan);
     // th1.join ();
 
-    // th.join();
+    ros::Duration (5.0).sleep ();
 
     beginner_tutorials::InitWaypointSet srv;
     process_file (filename, srv);
@@ -208,6 +242,14 @@ int main(int argc, char **argv) {
     srv.request.heading_offset = 0;
     srv.request.interpolator = intr;
 
+    // beginner_tutorials::GoTo srv;
+    // srv.request.waypoint.point.x = 0;
+    // srv.request.waypoint.point.y = 0;
+    // srv.request.waypoint.point.z = 3;
+    // srv.request.waypoint.max_forward_speed = 0.5;
+    // srv.request.interpolator = "cubic";
+    // srv.request.max_forward_speed = 0.5;
+
     if (client.call (srv)) {
         std::cout << "Successfull!!" << std::endl;
     }
@@ -216,6 +258,7 @@ int main(int argc, char **argv) {
     }
 
     ros::spin ();
+    th.join();
 
     return 0;
 }

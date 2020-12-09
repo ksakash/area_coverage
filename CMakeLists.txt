@@ -25,6 +25,9 @@ add_message_files (
 add_service_files (
   FILES
   InitWaypointSet.srv
+  GoTo.srv
+  GoToPose.srv
+  GoToIncremental.srv
 )
 
 generate_messages (

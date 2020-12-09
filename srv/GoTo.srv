@@ -1,0 +1,5 @@
+beginner_tutorials/Waypoint waypoint
+float64 max_forward_speed
+string interpolator
+---
+bool success
