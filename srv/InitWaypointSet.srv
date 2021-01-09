@@ -1,6 +1,6 @@
 std_msgs/Time start_time
 bool start_now
-beginner_tutorials/Waypoint[] waypoints
+Waypoint[] waypoints
 float64 max_forward_speed
 float64 heading_offset
 std_msgs/String interpolator

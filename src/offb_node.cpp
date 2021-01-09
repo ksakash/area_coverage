@@ -20,10 +20,10 @@
 #include <mavros_msgs/SetMode.h>
 #include <mavros_msgs/State.h>
 
-#include "beginner_tutorials/InitWaypointSet.h"
-#include "beginner_tutorials/Waypoint.h"
-#include "beginner_tutorials/GoTo.h"
-#include "beginner_tutorials/GoToPose.h"
+#include "controls_pkg/InitWaypointSet.h"
+#include "controls_pkg/Waypoint.h"
+#include "controls_pkg/GoTo.h"
+#include "controls_pkg/GoToPose.h"
 
 #include <std_msgs/Time.h>
 
@@ -137,7 +137,7 @@ void process_input (string filename, std::vector<geometry_msgs::PoseStamped>& pl
     }
 }
 
-void process_file (string filename, beginner_tutorials::InitWaypointSet& srv) {
+void process_file (string filename, controls_pkg::InitWaypointSet& srv) {
     std::string line;
     std::ifstream file (filename);
     while (getline (file, line)) {
@@ -146,7 +146,7 @@ void process_file (string filename, beginner_tutorials::InitWaypointSet& srv) {
         string strx, stry, strz;
         ss >> strx >> stry >> strz;
         geometry_msgs::Point p;
-        beginner_tutorials::Waypoint w;
+        controls_pkg::Waypoint w;
         w.point.x = std::stof (strx);
         w.point.y = std::stof (stry);
         w.point.z = std::stof (strz);
@@ -169,11 +169,11 @@ int main(int argc, char **argv) {
             ("mavros/cmd/arming");
     set_mode_client = nh.serviceClient<mavros_msgs::SetMode>
             ("mavros/set_mode");
-    ros::ServiceClient client = nh.serviceClient<beginner_tutorials::InitWaypointSet>
+    ros::ServiceClient client = nh.serviceClient<controls_pkg::InitWaypointSet>
             ("start_waypoint_list");
-    ros::ServiceClient goto_client = nh.serviceClient<beginner_tutorials::GoTo>
+    ros::ServiceClient goto_client = nh.serviceClient<controls_pkg::GoTo>
             ("go_to");
-    ros::ServiceClient goto_pose_client = nh.serviceClient<beginner_tutorials::GoToPose>
+    ros::ServiceClient goto_pose_client = nh.serviceClient<controls_pkg::GoToPose>
             ("go_to_pose");
 
     ros::Rate rate(20.0);
@@ -183,7 +183,7 @@ int main(int argc, char **argv) {
         rate.sleep();
     }
 
-    string filename = "/home/ksakash/misc/catkin_ws/src/beginner_tutorials/cfg/waypoints";
+    string filename = "/home/ksakash/misc/catkin_ws/src/controls_pkg/cfg/waypoints";
     std::vector<geometry_msgs::PoseStamped> plan;
 
     process_input (filename, plan);
@@ -227,7 +227,7 @@ int main(int argc, char **argv) {
 
     ros::Duration (5.0).sleep ();
 
-    beginner_tutorials::InitWaypointSet srv;
+    controls_pkg::InitWaypointSet srv;
     process_file (filename, srv);
 
     std_msgs::Time t;
@@ -242,7 +242,7 @@ int main(int argc, char **argv) {
     srv.request.heading_offset = 0;
     srv.request.interpolator = intr;
 
-    // beginner_tutorials::GoTo srv;
+    // controls_pkg::GoTo srv;
     // srv.request.waypoint.point.x = 0;
     // srv.request.waypoint.point.y = 0;
     // srv.request.waypoint.point.z = 3;

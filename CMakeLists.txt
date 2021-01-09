@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(beginner_tutorials)
+project(controls_pkg)
 
 # add_compile_options(-std=c++11)
 
@@ -95,7 +95,7 @@ set(gz_msgs
 PROTOBUF_GENERATE_CPP(SEN_PROTO_SRCS SEN_PROTO_HDRS ${gz_msgs})
 add_library(gz_msgs SHARED ${SEN_PROTO_SRCS})
 
-set (GZ_MSGS_INCLUDE_DIRS "/home/ksakash/misc/catkin_ws/devel/include")
+set (GZ_MSGS_INCLUDE_DIRS "/home/ksakash/projects/control_ws/devel/include")
 include_directories(${GZ_MSGS_INCLUDE_DIRS})
 
 add_executable(obstacle src/obstacle.cpp)
