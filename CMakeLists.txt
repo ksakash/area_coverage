@@ -63,6 +63,9 @@ include_directories(
 add_executable(offb_node src/offb_node.cpp)
 target_link_libraries(offb_node ${catkin_LIBRARIES})
 
+add_executable(simple_offb src/simple_offb_node.cpp)
+target_link_libraries(simple_offb ${catkin_LIBRARIES})
+
 add_executable(odo_offset src/odo_offset.cpp)
 target_link_libraries(odo_offset ${catkin_LIBRARIES})
 

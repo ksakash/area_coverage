@@ -151,6 +151,7 @@ void process_file (string filename, controls_pkg::InitWaypointSet& srv) {
         w.point.y = std::stof (stry);
         w.point.z = std::stof (strz);
         w.max_forward_speed = 0.5;
+        w.use_fixed_heading = true;
         srv.request.waypoints.push_back (w);
     }
 }
@@ -183,7 +184,7 @@ int main(int argc, char **argv) {
         rate.sleep();
     }
 
-    string filename = "/home/ksakash/misc/catkin_ws/src/controls_pkg/cfg/waypoints";
+    string filename = "/home/ksakash/projects/control_ws/src/controls_pkg/cfg/waypoints";
     std::vector<geometry_msgs::PoseStamped> plan;
 
     process_input (filename, plan);
@@ -206,14 +207,14 @@ int main(int argc, char **argv) {
     // arm_cmd.request.value = true;
 
     // while (ros::ok() && current_state.mode != "OFFBOARD" &&
-    //        !(set_mode_client.call(offb_set_mode) &&
+    //     !(set_mode_client.call(offb_set_mode) &&
     //         offb_set_mode.response.mode_sent)) {
     //     ros::spinOnce();
     //     rate.sleep();
     // }
-    // ROS_INFO("Offboard enabled");
+    // ROS_INFO("OFFBOARD enabled");
     // while (ros::ok() && !current_state.armed &&
-    //        !(arming_client.call(arm_cmd) &&
+    //     !(arming_client.call(arm_cmd) &&
     //         arm_cmd.response.success)) {
     //     ros::spinOnce();
     //     rate.sleep();

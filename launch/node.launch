@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
     <group ns="uav0">
-        <node pkg="beginner_tutorials" name="offb_node" type="offb_node" output="screen" />
+        <node pkg="controls_pkg" name="offb_node" type="offb_node" output="screen" />
     </group>
     <!-- <group ns="uav1">
         <node pkg="beginner_tutorials" name="offb_node" type="offb_node" output="screen" />
