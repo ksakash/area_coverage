@@ -18,7 +18,7 @@ offb_node.cpp - local planner to follow a series of waypoints for a single quadc
 
 random_sequence.cpp - a unique local planner to randomly select a trajectory in a fixed environment
                       with fixed ostacles
-                      
+
 # dirs
 
 cfg - contains waypoints to be followed by one of the local planner
@@ -30,7 +30,7 @@ srv - ROS service files
 
 # dpendencies
 
-melodic-ros, mavros, geometry_msgs
+melodic-ros, mavros, geometry_msgs, px4_gazebo_sitl
 
 # instructions to build
 

@@ -63,8 +63,14 @@ include_directories(
 add_executable(offb_node src/offb_node.cpp)
 target_link_libraries(offb_node ${catkin_LIBRARIES})
 
+add_executable(offb_node_local src/offb_node_local.cpp)
+target_link_libraries(offb_node_local ${catkin_LIBRARIES})
+
 add_executable(simple_offb src/simple_offb_node.cpp)
 target_link_libraries(simple_offb ${catkin_LIBRARIES})
+
+add_executable(offboard_control_circle_node src/ardu_offb.cpp)
+target_link_libraries(offboard_control_circle_node ${catkin_LIBRARIES})
 
 add_executable(odo_offset src/odo_offset.cpp)
 target_link_libraries(odo_offset ${catkin_LIBRARIES})
